@@ -1,0 +1,43 @@
+/* static/css/pages/fyp.css — Recommendations page */
+.fyp-page {
+    padding: var(--spacing-2xl);
+}
+
+.fyp-page h1 {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2xl);
+    color: var(--color-text-primary);
+}
+
+/* Recommendations */
+.recommendations-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+/* Sections */
+.recommendation-section {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.recommendation-section h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-primary);
+}
+
+/* Loading State */
+.loading-skeleton {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.skeleton-card {
+    background-color: var(--color-elevated-card);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-md);
+}

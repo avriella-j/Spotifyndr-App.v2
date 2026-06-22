@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+<!-- templates/explore.html — Swipe-based user discovery page -->
+
+{% block title %}Explore - Spotifyndr{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/explore.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="explore-page">
+    <h1>Explore</h1>
+    <!-- Swipeable user cards container -->
+    <div class="swipe-container" id="swipe-container">
+        <!-- Swipe cards loaded dynamically -->
+    </div>
+    <!-- Like / Dislike buttons -->
+    <div class="swipe-controls">
+        <button class="btn btn-dislike" id="dislike-btn">✕</button>
+        <button class="btn btn-like" id="like-btn">♥</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/explore/swipe.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages/explore/card.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!-- templates/base.html — Base layout with nav, sidebar, and bottom bar -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Spotifyndr{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/navigation.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/cards.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components/buttons.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <a href="{{ url_for('main.index') }}" class="mobile-header-logo">Spotifyndr</a>
+        <button class="menu-toggle burger-btn" id="menu-toggle" aria-label="Menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </header>
+
+    <!-- Mobile Navigation Menu -->
+    <nav class="mobile-nav-menu" id="mobile-nav-menu">
+        <a href="{{ url_for('main.home') }}">Home</a>
+        <a href="{{ url_for('explore.explore') }}">Explore</a>
+        <a href="{{ url_for('fyp.fyp') }}">For You</a>
+        <a href="{{ url_for('mutuals.mutuals') }}">Find Mutuals</a>
+        <a href="{{ url_for('messaging.messaging') }}">Messages</a>
+        <a href="{{ url_for('profile.profile') }}">Profile</a>
+        <a href="{{ url_for('settings.settings') }}">Settings</a>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </nav>
+
+    <!-- Desktop Sidebar -->
+    <nav class="nav-sidebar">
+        <div class="nav-brand">
+            <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Spotifyndr">
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('main.home') }}" class="nav-link">Home</a></li>
+            <li><a href="{{ url_for('fyp.fyp') }}" class="nav-link">For You</a></li>
+            <li><a href="{{ url_for('explore.explore') }}" class="nav-link">Explore</a></li>
+            <li><a href="{{ url_for('mutuals.mutuals') }}" class="nav-link">Find Mutuals</a></li>
+            <li><a href="{{ url_for('messaging.messaging') }}" class="nav-link">Messages</a></li>
+            <li><a href="{{ url_for('profile.profile') }}" class="nav-link">Profile</a></li>
+            <li><a href="{{ url_for('settings.settings') }}" class="nav-link">Settings</a></li>
+        </ul>
+        <div class="nav-footer">
+            <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="app-layout">
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" aria-label="Bottom navigation">
+        <ul class="bottom-nav-items">
+            <li><a href="{{ url_for('explore.explore') }}" class="bottom-nav-item">
+                <span class="bottom-nav-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="M21 21l-4.35-4.35"></path>
+                    </svg>
+                </span>
+                <span>Explore</span>
+            </a></li>
+            <li><a href="{{ url_for('fyp.fyp') }}" class="bottom-nav-item">
+                <span class="bottom-nav-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18V5l12-2v13"></path>
+                        <circle cx="6" cy="18" r="3"></circle>
+                        <circle cx="18" cy="16" r="3"></circle>
+                    </svg>
+                </span>
+                <span>For You</span>
+            </a></li>
+            <li><a href="{{ url_for('mutuals.mutuals') }}" class="bottom-nav-item">
+                <span class="bottom-nav-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </span>
+                <span>Mutuals</span>
+            </a></li>
+            <li><a href="{{ url_for('messaging.messaging') }}" class="bottom-nav-item">
+                <span class="bottom-nav-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </span>
+                <span>Messages</span>
+            </a></li>
+            <li><a href="{{ url_for('profile.profile') }}" class="bottom-nav-item">
+                <span class="bottom-nav-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </span>
+                <span>Profile</span>
+            </a></li>
+        </ul>
+    </nav>
+
+    {% include 'partials/_toast.html' %}
+
+    <!-- Scripts: Socket.IO, app modules, GSAP -->
+    <script>
+        const currentUserId = {{ current_user.id if current_user.is_authenticated else 'null' }};
+    </script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/core/socket.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/toast.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileNavMenu = document.getElementById('mobile-nav-menu');
+
+            if (menuToggle && mobileNavMenu) {
+                menuToggle.addEventListener('click', function() {
+                    mobileNavMenu.classList.toggle('open');
+                    menuToggle.classList.toggle('open');
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileNavMenu.contains(event.target) && !menuToggle.contains(event.target)) {
+                        mobileNavMenu.classList.remove('open');
+                    }
+                });
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

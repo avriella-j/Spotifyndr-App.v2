@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+<!-- templates/mutuals.html — Users with shared music taste discovery -->
+
+{% block title %}Find Mutuals - Spotifyndr{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/mutuals.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="mutuals-page">
+    <h1>Find Mutuals</h1>
+    <!-- List of users with overlapping music interests -->
+    <div class="mutuals-container" id="mutuals">
+        <!-- Mutual users loaded dynamically -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/mutuals.js') }}"></script>
+{% endblock %}

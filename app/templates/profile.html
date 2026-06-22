@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+<!-- templates/profile.html — Current user's profile with top tracks and artists -->
+
+{% block title %}Profile - Spotifyndr{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <!-- Profile header: avatar, name, email -->
+    <div class="profile-header">
+        <img src="{{ current_user.image_url or url_for('static', filename='img/default-avatar.svg') }}" alt="Profile" class="profile-image">
+        <h1>{{ current_user.display_name }}</h1>
+        <p>{{ current_user.email }}</p>
+        {% if current_user.bio %}<p class="profile-bio">{{ current_user.bio }}</p>{% endif %}
+    </div>
+    
+    <div class="profile-content">
+        <!-- User's top tracks section -->
+        <div class="top-tracks">
+            <h2>Top Tracks</h2>
+            <div id="top-tracks">
+                <!-- Top tracks loaded dynamically -->
+            </div>
+        </div>
+        
+        <!-- User's top artists section -->
+        <div class="top-artists">
+            <h2>Top Artists</h2>
+            <div id="top-artists">
+                <!-- Top artists loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/profile.js') }}"></script>
+{% endblock %}

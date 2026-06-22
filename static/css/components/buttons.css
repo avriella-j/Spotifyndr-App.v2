@@ -1,0 +1,252 @@
+/* static/css/components/buttons.css — All button variants */
+
+/* Base button */
+.btn {
+    padding: 12px 32px;
+    border-radius: var(--radius-pill);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    position: relative;
+    cursor: pointer;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Primary button - Spotify Green */
+.btn-primary {
+    background-color: #1ED760;
+    color: #000000;
+    font-weight: 700;
+    border-radius: 500px;
+    padding: 14px 40px;
+    font-size: 16px;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-primary:hover:not(:disabled) {
+    filter: brightness(1.05);
+    transform: scale(1.02);
+}
+
+.btn-primary:focus-visible {
+    outline: 2px solid var(--color-spotify-green);
+    outline-offset: 2px;
+}
+
+/* Secondary/Ghost button */
+.btn-secondary {
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:focus-visible {
+    outline: 2px solid var(--color-spotify-green);
+    outline-offset: 2px;
+}
+
+/* Danger button */
+.btn-danger {
+    background-color: var(--color-error);
+    color: var(--color-text-primary);
+    border: none;
+}
+
+.btn-danger:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+
+/* Icon button */
+.btn-icon {
+    background: transparent;
+    border: none;
+    padding: var(--spacing-sm);
+    color: var(--color-text-secondary);
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+    color: var(--color-text-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-icon.active {
+    color: var(--color-spotify-green);
+}
+
+/* Like/Save button */
+.btn-like {
+    background: transparent;
+    border: none;
+    padding: var(--spacing-sm);
+    color: var(--color-text-secondary);
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.btn-like:hover {
+    color: var(--color-text-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-like.liked {
+    color: var(--color-spotify-green);
+}
+
+/* Play button */
+.btn-play {
+    background-color: var(--color-spotify-green);
+    color: #000000;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.btn-play:hover:not(:disabled) {
+    transform: scale(1.02);
+    filter: brightness(1.05);
+}
+
+/* Small button */
+.btn-sm {
+    padding: 8px 16px;
+    font-size: var(--font-size-sm);
+}
+
+/* Large button */
+.btn-lg {
+    padding: 16px 48px;
+    font-size: var(--font-size-lg);
+}
+
+/* Follow button */
+.btn-follow {
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 24px;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-pill);
+    transition: all var(--transition-fast);
+}
+
+.btn-follow:hover {
+    border-color: var(--color-text-primary);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Following state */
+.btn-follow.following {
+    background-color: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-text-primary);
+}
+
+/* Ghost button */
+.btn-ghost {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+}
+
+.btn-ghost:hover {
+    background-color: var(--color-elevated);
+    color: var(--color-text-primary);
+}
+
+/* Card play button overlay */
+.card-play {
+    position: absolute;
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    background-color: var(--color-spotify-green);
+    color: #000000;
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all var(--transition-fast);
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.3);
+}
+
+.card:hover .card-play {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Swipe buttons */
+.btn-dislike {
+    background-color: transparent;
+    color: var(--color-error);
+    border: 2px solid var(--color-error);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-2xl);
+    transition: all var(--transition-fast);
+}
+
+.btn-dislike:hover {
+    background-color: var(--color-error);
+    color: var(--color-text-primary);
+    transform: scale(1.05);
+}
+
+.btn-like {
+    background-color: var(--color-spotify-green);
+    color: #000000;
+    border: none;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-2xl);
+    transition: all var(--transition-fast);
+}
+
+.btn-like:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+}

@@ -1,0 +1,8 @@
+<!-- partials/_user_card.html — Single user card with follow button -->
+<div class="user-card" data-user-id="{{ user.id }}">
+    <img src="{{ user.image_url or url_for('static', filename='img/default-avatar.svg') }}" alt="{{ user.display_name }}" class="user-image">
+    <div class="user-info">
+        <h3>{{ user.display_name }}</h3>
+        <button class="btn btn-follow" data-user-id="{{ user.id }}">Follow</button>
+    </div>
+</div>

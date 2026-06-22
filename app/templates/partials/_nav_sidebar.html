@@ -1,0 +1,23 @@
+<!-- partials/_nav_sidebar.html — Desktop sidebar navigation -->
+<nav class="nav-sidebar">
+    <!-- App logo / brand -->
+    <div class="nav-brand">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Spotifyndr">
+    </div>
+    
+    <!-- Primary navigation links -->
+    <ul class="nav-links">
+        <li><a href="{{ url_for('main.home') }}" class="nav-link">Home</a></li>
+        <li><a href="{{ url_for('fyp.fyp') }}" class="nav-link">For You</a></li>
+        <li><a href="{{ url_for('explore.explore') }}" class="nav-link">Explore</a></li>
+        <li><a href="{{ url_for('mutuals.mutuals') }}" class="nav-link">Find Mutuals</a></li>
+        <li><a href="{{ url_for('messaging.messaging') }}" class="nav-link">Messages</a></li>
+        <li><a href="{{ url_for('profile.profile') }}" class="nav-link">Profile</a></li>
+        <li><a href="{{ url_for('settings.settings') }}" class="nav-link">Settings</a></li>
+    </ul>
+    
+    <!-- Logout at bottom -->
+    <div class="nav-footer">
+        <a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a>
+    </div>
+</nav>

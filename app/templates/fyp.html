@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+<!-- templates/fyp.html — ML-powered track recommendations page -->
+
+{% block title %}For You - Spotifyndr{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/fyp.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="fyp-page">
+    <h1>For You</h1>
+    <!-- Personalized recommendation cards -->
+    <div class="recommendations-container" id="recommendations">
+        <!-- Recommendations loaded dynamically -->
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/pages/fyp.js') }}"></script>
+{% endblock %}

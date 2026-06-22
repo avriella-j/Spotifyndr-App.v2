@@ -1,0 +1,58 @@
+/* static/css/pages/profile.css — User profile page */
+.profile-page {
+    padding: var(--spacing-2xl);
+}
+
+/* Header */
+.profile-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.profile-header h1 {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-primary);
+}
+
+.profile-bio {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-md);
+    margin-top: var(--spacing-sm);
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: var(--spacing-md);
+    border: 4px solid var(--color-elevated-card);
+}
+
+/* Content Grid */
+.profile-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+/* Top Tracks & Artists */
+.top-tracks,
+.top-artists {
+    background-color: var(--color-elevated-card);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-lg);
+}
+
+.top-tracks h2,
+.top-artists h2 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-lg);
+    color: var(--color-text-primary);
+}

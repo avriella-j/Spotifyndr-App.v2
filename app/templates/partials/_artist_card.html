@@ -1,0 +1,8 @@
+<!-- partials/_artist_card.html — Single artist thumbnail card -->
+<div class="artist-card" data-artist-id="{{ artist.id }}">
+    <img src="{{ artist.images[0].url }}" alt="{{ artist.name }}" class="artist-image">
+    <div class="artist-info">
+        <h3>{{ artist.name }}</h3>
+        <p>{{ artist.followers.total | format_number }} followers</p>
+    </div>
+</div>

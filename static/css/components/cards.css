@@ -1,0 +1,213 @@
+/* static/css/components/cards.css — Card variants and skeleton loaders */
+
+/* Base Card */
+.card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    transition: background-color var(--transition-fast);
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+}
+
+.card:hover {
+    background-color: var(--color-elevated);
+}
+
+.card:focus-visible {
+    outline: 2px solid var(--color-spotify-green);
+    outline-offset: 2px;
+}
+
+/* Track Card */
+.track-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    transition: background-color var(--transition-fast);
+    cursor: pointer;
+}
+
+.track-card:hover {
+    background-color: var(--color-elevated);
+}
+
+.track-artwork {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--spacing-md);
+    background-color: var(--color-subtle);
+}
+
+.track-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    max-lines: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.track-artist {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+    max-lines: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* User Card */
+.user-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    transition: background-color var(--transition-fast);
+    cursor: pointer;
+    text-align: center;
+}
+
+.user-card:hover {
+    background-color: var(--color-elevated);
+}
+
+.user-avatar {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: var(--spacing-md);
+    background-color: var(--color-subtle);
+}
+
+.user-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.user-meta {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+}
+
+/* Artist Card */
+.artist-card {
+    background-color: transparent;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    transition: background-color var(--transition-fast);
+    cursor: pointer;
+    text-align: center;
+}
+
+.artist-card:hover {
+    background-color: var(--color-elevated);
+}
+
+.artist-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: var(--spacing-md);
+    background-color: var(--color-subtle);
+}
+
+.artist-name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.artist-genre {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+}
+
+/* Playlist Card */
+.playlist-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    transition: background-color var(--transition-fast);
+    cursor: pointer;
+}
+
+.playlist-card:hover {
+    background-color: var(--color-elevated);
+}
+
+.playlist-artwork {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    background-color: var(--color-subtle);
+}
+
+.playlist-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+    max-lines: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.playlist-meta {
+    font-size: var(--font-size-md);
+    color: var(--color-text-secondary);
+}
+
+/* Hover lift effect for cards */
+.card-grid .card {
+    transform: translateY(0);
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.card-grid .card:hover {
+    transform: translateY(-4px);
+}
+
+/* Skeleton Loaders */
+.skeleton {
+    background: linear-gradient(90deg, var(--color-surface) 25%, var(--color-subtle) 50%, var(--color-surface) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-image {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-text {
+    height: 16px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.skeleton-text-sm {
+    height: 12px;
+    width: 60%;
+}

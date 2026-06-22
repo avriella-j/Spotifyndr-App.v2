@@ -1,0 +1,51 @@
+/* static/css/components/audio-player.css — Now-playing bar */
+.audio-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--color-surface);
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    z-index: 1000;
+}
+
+/* Track Info */
+.audio-player-info {
+    flex: 1;
+}
+
+.audio-player-info h4 {
+    font-size: var(--font-size-md);
+    margin-bottom: var(--spacing-xs);
+}
+
+.audio-player-info p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* Controls */
+.audio-player-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+/* Progress */
+.audio-player-progress {
+    flex: 2;
+    height: 4px;
+    background-color: var(--color-border);
+    border-radius: 2px;
+    position: relative;
+}
+
+.audio-player-progress-bar {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: 2px;
+    width: 0%;
+}

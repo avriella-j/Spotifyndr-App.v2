@@ -1,0 +1,8 @@
+<!-- partials/_playlist_card.html — Single playlist thumbnail card -->
+<div class="playlist-card" data-playlist-id="{{ playlist.id }}">
+    <img src="{{ playlist.images[0].url }}" alt="{{ playlist.name }}" class="playlist-image">
+    <div class="playlist-info">
+        <h3>{{ playlist.name }}</h3>
+        <p>{{ playlist.owner.display_name }}</p>
+    </div>
+</div>

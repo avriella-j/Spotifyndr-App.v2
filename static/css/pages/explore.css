@@ -1,0 +1,28 @@
+/* static/css/pages/explore.css — Swipe/explore page */
+.explore-page {
+    padding: var(--spacing-2xl);
+}
+
+.explore-page h1 {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-2xl);
+    color: var(--color-text-primary);
+}
+
+/* Swipe Area */
+.swipe-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+    position: relative;
+}
+
+/* Controls */
+.swipe-controls {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+}

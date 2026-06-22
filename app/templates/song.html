@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+<!-- templates/song.html — Individual song detail page -->
+
+{% block title %}{{ song.name }} - Spotifyndr{% endblock %}
+
+{% block content %}
+<div class="song-page">
+    <!-- Song header: cover art, title, artist, album -->
+    <div class="song-header">
+        <img src="{{ song.image_url }}" alt="{{ song.name }}" class="song-cover">
+        <div class="song-info">
+            <h1>{{ song.name }}</h1>
+            <p class="song-artist">{{ song.artist_name }}</p>
+            <p class="song-album">{{ song.album_name }}</p>
+            <div class="song-actions">
+                <button class="btn btn-play">▶ Play</button>
+                <button class="btn btn-like">♥ Like</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Track metadata -->
+    <div class="song-details">
+        <h2>About this track</h2>
+        <p>Duration: {{ song.duration_ms // 60000 }}:{{ (song.duration_ms % 60000) // 1000:02d }}</p>
+        <p>Popularity: {{ song.popularity }}/100</p>
+    </div>
+
+    <!-- Related song recommendations -->
+    <div class="similar-songs">
+        <h2>Similar Songs</h2>
+        <div class="songs-grid">
+            <!-- Similar songs loaded dynamically -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Song page layout */
+    .song-page {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Song header: cover + info */
+    .song-header {
+        display: flex;
+        gap: var(--spacing-2xl);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .song-cover {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: var(--border-radius-lg);
+    }
+
+    .song-info h1 {
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text-primary);
+    }
+
+    .song-artist {
+        font-size: var(--font-size-xl);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .song-album {
+        font-size: var(--font-size-md);
+        color: var(--color-text-muted);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .song-actions {
+        display: flex;
+        gap: var(--spacing-md);
+    }
+
+    /* Song details card */
+    .song-details {
+        background-color: var(--color-elevated-card);
+        padding: var(--spacing-lg);
+        border-radius: var(--border-radius-lg);
+        margin-bottom: var(--spacing-2xl);
+    }
+
+    .song-details h2 {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-semibold);
+        margin-bottom: var(--spacing-md);
+        color: var(--color-text-primary);
+    }
+
+    .song-details p {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    /* Similar songs grid */
+    .similar-songs h2 {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-semibold);
+        margin-bottom: var(--spacing-lg);
+        color: var(--color-text-primary);
+    }
+
+    .songs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+        .song-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
