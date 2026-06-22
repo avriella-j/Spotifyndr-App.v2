@@ -15,7 +15,7 @@ class Config:
     # Spotify OAuth
     SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID')
     SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET')
-    SPOTIFY_REDIRECT_URI = os.environ.get('SPOTIFY_REDIRECT_URI') or 'https://avriella.pythonanywhere.com/auth/callback'
+    SPOTIFY_REDIRECT_URI = os.environ.get('SPOTIFY_REDIRECT_URI') or 'https://avj9015.pythonanywhere.com/auth/callback'
 
     # Session
     SESSION_COOKIE_SECURE = False
