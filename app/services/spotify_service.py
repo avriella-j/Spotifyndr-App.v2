@@ -70,6 +70,10 @@ class SpotifyService:
     def get_top_artists(self, limit=20, time_range='medium_term'):
         """Get user's top artists."""
         return self._make_request('/me/top/artists', {'limit': limit, 'time_range': time_range})
+
+    def get_saved_tracks(self, limit=50):
+        """Get user's saved ('Liked Songs') tracks. Requires user-library-read scope."""
+        return self._make_request('/me/tracks', {'limit': limit})
     
     def get_track(self, track_id):
         """Get track details."""

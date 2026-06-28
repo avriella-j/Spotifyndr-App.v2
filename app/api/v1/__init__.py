@@ -3,6 +3,7 @@ from flask import Blueprint
 api_bp = Blueprint('api', __name__)
 
 from app.api.v1 import users, follows, fyp, explore, mutuals, messaging, settings, notifications, tracks, search
+from app.api.v1.swipes import swipes_api_bp
 
 api_bp.add_url_rule('/users', view_func=users.get_users, methods=['GET'])
 api_bp.add_url_rule('/users/search', view_func=users.search_users, methods=['GET'])
@@ -43,3 +44,5 @@ api_bp.add_url_rule('/notifications/<int:notification_id>/read', view_func=notif
 api_bp.add_url_rule('/tracks/<track_id>', view_func=tracks.get_track, methods=['GET'])
 
 api_bp.add_url_rule('/search', view_func=search.search, methods=['GET'])
+
+api_bp.register_blueprint(swipes_api_bp, url_prefix='/swipes')

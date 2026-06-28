@@ -20,6 +20,7 @@ class SpotifySyncService:
 
         tracks_resp = spotify.get_top_tracks(limit=limit, time_range=time_range)
         artists_resp = spotify.get_top_artists(limit=limit, time_range=time_range)
+        saved_resp = spotify.get_saved_tracks(limit=50)
 
         top_tracks = [
             {
@@ -54,8 +55,24 @@ class SpotifySyncService:
             content = UserTopContent(user_id=user.id)
             db.session.add(content)
 
+        saved_tracks = [
+            {
+                'id': item['track']['id'],
+                'name': item['track']['name'],
+                'artist': ', '.join(a['name'] for a in item['track']['artists']),
+                'artist_ids': [a['id'] for a in item['track']['artists']],
+                'album': item['track']['album']['name'],
+                'image_url': item['track']['album']['images'][0]['url'] if item['track']['album']['images'] else None,
+                'uri': item['track']['uri'],
+                'added_at': item.get('added_at'),
+            }
+            for item in saved_resp.get('items', [])
+            if not item['track'].get('is_local')
+        ]
+
         content.top_tracks = top_tracks
         content.top_artists = top_artists
+        content.saved_tracks = saved_tracks
         content.updated_at = datetime.utcnow()
         db.session.commit()
 
