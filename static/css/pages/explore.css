@@ -21,17 +21,14 @@
     margin: 0 auto;
 }
 
-/* Each card stacks absolutely on top of the others. Without this, every
-   card rendered by card.js sits in normal flex flow and nothing is
-   visually distinguishable as "the current card" — this is why the
-   swipe area appeared completely empty before. */
+/* Each card stacks absolutely on top of the others. */
 .swipe-card {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 500px;
-    background-color: var(--color-elevated-card);
+    background-color: #181818;
     border-radius: var(--border-radius-lg);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
     cursor: grab;
@@ -39,6 +36,7 @@
     touch-action: none;
     transition: transform 0.3s ease, opacity 0.3s ease;
     overflow: hidden;
+    isolation: isolate;
 }
 
 .swipe-card.dragging {
@@ -46,10 +44,6 @@
     cursor: grabbing;
 }
 
-/* Stack subsequent cards slightly behind/below the top one so there's
-   a visible "deck" effect, like Tinder. nth-of-type counts from the
-   first card in the DOM; card.js prepends newest first, so the first
-   card in source order is always the visual top of the stack. */
 .swipe-card:nth-of-type(1) { z-index: 3; }
 .swipe-card:nth-of-type(2) { z-index: 2; transform: scale(0.96) translateY(8px); }
 .swipe-card:nth-of-type(3) { z-index: 1; transform: scale(0.92) translateY(16px); }
@@ -59,6 +53,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
+    background-color: #181818;
 }
 
 .swipe-card-image {
@@ -66,14 +62,19 @@
     height: 75%;
     object-fit: cover;
     display: block;
+    flex-shrink: 0;
 }
 
 .swipe-card-info {
+    position: relative;
+    background-color: #181818;
     padding: var(--spacing-lg);
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    overflow: hidden;
 }
 
 .swipe-card-info h3 {
@@ -91,7 +92,6 @@
     color: var(--color-text-secondary);
 }
 
-/* Visual feedback while dragging */
 .swipe-card.drag-like {
     box-shadow: 0 8px 24px rgba(30, 215, 96, 0.5);
 }
@@ -100,14 +100,23 @@
     box-shadow: 0 8px 24px rgba(255, 69, 58, 0.5);
 }
 
-/* Empty state once all cards are swiped */
 .swipe-empty-state {
     text-align: center;
     color: var(--color-text-secondary);
     font-size: var(--font-size-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-md);
 }
 
-/* Controls */
+.swipe-session-message {
+    color: var(--color-text-primary);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    max-width: 320px;
+}
+
 .swipe-controls {
     display: flex;
     justify-content: center;

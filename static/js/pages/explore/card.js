@@ -1,7 +1,8 @@
 // static/js/pages/explore/card.js — Explore card rendering
-// On DOM ready, fetch content and render swipe cards
 
 let activeCards = [];
+let swipeCount = 0;
+const SESSION_LIMIT = 15;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const container = document.getElementById('swipe-container');
@@ -40,17 +41,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         container.prepend(card);
 
-        const swipeCard = new SwipeCard(card, () => onCardRemoved(container));
+        const swipeCard = new SwipeCard(card, () => onCardSwiped());
         activeCards.unshift(swipeCard);
     }
 
-    function onCardRemoved(container) {
+    function onCardSwiped() {
         activeCards.shift();
+        swipeCount++;
+
+        if (swipeCount >= SESSION_LIMIT) {
+            showSessionComplete(container);
+            return;
+        }
+
         if (activeCards.length <= 2) {
             loadDeck();
-        }
-        if (activeCards.length === 0) {
-            showEmptyState(container);
         }
     }
 
@@ -60,6 +65,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         empty.className = 'swipe-empty-state';
         empty.textContent = "You're all caught up — check back later for more.";
         container.appendChild(empty);
+    }
+
+    async function showSessionComplete(container) {
+        container.innerHTML = '';
+        const summary = document.createElement('div');
+        summary.className = 'swipe-empty-state';
+        summary.innerHTML = `<p>Nice swiping! Finding your taste pattern...</p>`;
+        container.appendChild(summary);
+
+        try {
+            const result = await API.get('/swipes/taste-summary');
+            summary.innerHTML = `
+                <p class="swipe-session-message">${result.message}</p>
+                <button class="btn btn-like" id="keep-swiping-btn" style="margin-top: var(--spacing-lg); width: auto; border-radius: var(--border-radius-md); padding: 0 var(--spacing-lg); font-size: var(--font-size-md);">
+                    Keep swiping
+                </button>
+            `;
+            document.getElementById('keep-swiping-btn')?.addEventListener('click', () => {
+                swipeCount = 0;
+                container.innerHTML = '';
+                loadDeck();
+            });
+        } catch (error) {
+            summary.innerHTML = `<p>Nice swiping! Check your stats anytime from your profile.</p>`;
+        }
     }
 
     await loadDeck();
