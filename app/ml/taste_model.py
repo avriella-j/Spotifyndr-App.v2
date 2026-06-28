@@ -1,24 +1,24 @@
 # app/ml/taste_model.py — Logistic regression over a user's swipe history,
-# to produce a simple "your taste leans toward X genres" summary.
+# using artist identity as the feature (genres are no longer reliably
+# returned by Spotify's API).
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 
-def build_training_data(swipes, known_genres):
+def build_training_data(swipes, known_artist_ids):
     """
-    swipes: list of Swipe model instances for one user. Each Swipe now
-        carries its own `genres` field, captured at swipe-creation time.
-    known_genres: ordered list of all genre strings the system tracks
+    swipes: list of Swipe model instances for one user.
+    known_artist_ids: ordered list of all artist IDs the system has seen
+        for this user (their own top/saved artists + anything swiped).
 
     Returns (X, y) suitable for sklearn, or (None, None) if there's not
     enough data to train on.
     """
     X, y = [], []
     for swipe in swipes:
-        genres = swipe.genres or []
-        if not genres:
+        if not swipe.artist_id or swipe.artist_id not in known_artist_ids:
             continue
-        row = [1.0 if g in genres else 0.0 for g in known_genres]
+        row = [1.0 if a == swipe.artist_id else 0.0 for a in known_artist_ids]
         X.append(row)
         y.append(1 if swipe.liked else 0)
 
@@ -36,19 +36,24 @@ def train_taste_model(X, y):
     return model
 
 
-def summarize_taste(model, known_genres, top_n=5):
-    """Turn the trained model's coefficients into a human-readable summary."""
+def summarize_taste(model, known_artist_ids, artist_id_to_name, top_n=5):
+    """Turn the trained model's coefficients into a human-readable summary,
+    naming the artists the model learned the user prefers."""
     if model is None:
-        return {'genres': [], 'message': 'Not enough swipe data yet — keep swiping!'}
+        return {'artists': [], 'message': 'Not enough swipe data yet — keep swiping!'}
 
     coefs = model.coef_[0]
-    ranked = sorted(zip(known_genres, coefs), key=lambda kv: kv[1], reverse=True)
-    top_genres = [{'genre': g, 'weight': round(float(w), 3)} for g, w in ranked[:top_n] if w > 0]
+    ranked = sorted(zip(known_artist_ids, coefs), key=lambda kv: kv[1], reverse=True)
+    top_artists = [
+        {'artist_id': aid, 'name': artist_id_to_name.get(aid, 'Unknown artist'), 'weight': round(float(w), 3)}
+        for aid, w in ranked[:top_n] if w > 0
+    ]
 
-    if not top_genres:
-        return {'genres': [], 'message': "We need a bit more swipe data to find your taste pattern."}
+    if not top_artists:
+        return {'artists': [], 'message': "We need a bit more swipe data to find your taste pattern."}
 
+    names = ', '.join(a['name'] for a in top_artists[:3])
     return {
-        'genres': top_genres,
-        'message': f"Your taste leans toward {', '.join(g['genre'] for g in top_genres[:3])}."
+        'artists': top_artists,
+        'message': f"Your taste leans toward {names}."
     }

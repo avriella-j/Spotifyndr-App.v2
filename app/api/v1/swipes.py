@@ -5,32 +5,27 @@ from app.extensions import db
 from app.models.swipe import Swipe
 from app.models.user_top_content import UserTopContent
 from app.ml.taste_model import build_training_data, train_taste_model, summarize_taste
-from app.ml.known_genres import get_known_genres
 import random
 
 swipes_api_bp = Blueprint('swipes_api', __name__)
 
 
-def _build_artist_genre_lookup(content):
-    lookup = {}
-    for artist in (content.top_artists or []):
-        if artist.get('id'):
-            lookup[artist['id']] = artist.get('genres', [])
-    return lookup
-
-
-def _genres_for_content(content_id, content_type, content, artist_genre_lookup):
+def _find_artist_for_content(content_id, content_type, content):
     if content_type == 'artist':
-        return artist_genre_lookup.get(content_id, [])
+        for artist in (content.top_artists or []):
+            if artist.get('id') == content_id:
+                return artist.get('id'), artist.get('name')
+        return content_id, None
 
     all_tracks = (content.saved_tracks or []) + (content.top_tracks or [])
     for track in all_tracks:
         if track.get('id') == content_id:
-            for artist_id in track.get('artist_ids', []):
-                genres = artist_genre_lookup.get(artist_id)
-                if genres:
-                    return genres
-    return []
+            artist_ids = track.get('artist_ids') or []
+            if artist_ids:
+                primary_id = artist_ids[0]
+                primary_name = (track.get('artist') or '').split(',')[0].strip()
+                return primary_id, primary_name or None
+    return None, None
 
 
 @swipes_api_bp.route('', methods=['POST'])
@@ -48,17 +43,17 @@ def record_swipe():
         return jsonify({'error': 'liked must be a boolean'}), 400
 
     content = UserTopContent.query.filter_by(user_id=current_user.id).first()
-    genres = []
+    artist_id, artist_name = (None, None)
     if content:
-        artist_genre_lookup = _build_artist_genre_lookup(content)
-        genres = _genres_for_content(content_id, content_type, content, artist_genre_lookup)
+        artist_id, artist_name = _find_artist_for_content(content_id, content_type, content)
 
     swipe = Swipe(
         user_id=current_user.id,
         content_id=content_id,
         content_type=content_type,
         liked=liked,
-        genres=genres,
+        artist_id=artist_id,
+        artist_name=artist_name,
     )
     db.session.add(swipe)
     db.session.commit()
@@ -89,16 +84,31 @@ def get_swipe_deck():
     return jsonify(deduped)
 
 
+def _build_known_artists(user_id):
+    content = UserTopContent.query.filter_by(user_id=user_id).first()
+    artist_id_to_name = {}
+    if content:
+        for artist in (content.top_artists or []):
+            if artist.get('id'):
+                artist_id_to_name[artist['id']] = artist.get('name', 'Unknown artist')
+
+    swipes = Swipe.query.filter_by(user_id=user_id).all()
+    for swipe in swipes:
+        if swipe.artist_id and swipe.artist_id not in artist_id_to_name:
+            artist_id_to_name[swipe.artist_id] = swipe.artist_name or 'Unknown artist'
+
+    return list(artist_id_to_name.keys()), artist_id_to_name, swipes
+
+
 @swipes_api_bp.route('/taste-summary', methods=['GET'])
 @login_required
 def taste_summary():
     """Return a logistic-regression-derived summary of the user's taste,
-    reading genres directly from each Swipe row (captured at swipe-time)."""
-    swipes = Swipe.query.filter_by(user_id=current_user.id).all()
-    known_genres = get_known_genres()
+    based on which artists they tend to like vs dislike when swiping."""
+    known_artist_ids, artist_id_to_name, swipes = _build_known_artists(current_user.id)
 
-    X, y = build_training_data(swipes, known_genres)
+    X, y = build_training_data(swipes, known_artist_ids)
     model = train_taste_model(X, y) if X is not None else None
-    summary = summarize_taste(model, known_genres)
+    summary = summarize_taste(model, known_artist_ids, artist_id_to_name)
 
     return jsonify(summary)
