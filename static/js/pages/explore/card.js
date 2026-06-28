@@ -2,29 +2,36 @@
 
 let activeCards = [];
 let swipeCount = 0;
-const SESSION_LIMIT = 15;
+let deckPool = [];
+let deckPoolIndex = 0;
+const RENDER_AHEAD = 3;
+const WRAPPED_MIN_SWIPES = 5;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const container = document.getElementById('swipe-container');
+    const wrappedBtn = document.getElementById('wrapped-btn');
 
-    async function loadDeck() {
+    async function fetchPool() {
         try {
             const content = await API.get('/swipes/deck');
-
-            if (!content || content.length === 0) {
-                if (activeCards.length === 0) {
-                    showEmptyState(container);
-                }
-                return;
-            }
-
-            content.forEach(item => renderCard(item, container));
+            return content || [];
         } catch (error) {
             Toast.error('Error', 'Failed to load explore content');
+            return [];
         }
     }
 
-    function renderCard(item, container) {
+    function nextPoolItem() {
+        if (deckPool.length === 0) return null;
+        const item = deckPool[deckPoolIndex % deckPool.length];
+        deckPoolIndex++;
+        return item;
+    }
+
+    function renderNextCard(container) {
+        const item = nextPoolItem();
+        if (!item) return;
+
         const card = document.createElement('div');
         card.className = 'swipe-card';
         card.dataset.contentId = item.id;
@@ -41,21 +48,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         container.prepend(card);
 
-        const swipeCard = new SwipeCard(card, () => onCardSwiped());
+        const swipeCard = new SwipeCard(card, () => onCardSwiped(container));
         activeCards.unshift(swipeCard);
     }
 
-    function onCardSwiped() {
+    function fillStack(container) {
+        while (activeCards.length < RENDER_AHEAD && deckPool.length > 0) {
+            renderNextCard(container);
+        }
+    }
+
+    function onCardSwiped(container) {
         activeCards.shift();
         swipeCount++;
+        updateWrappedButton();
+        fillStack(container);
+    }
 
-        if (swipeCount >= SESSION_LIMIT) {
-            showSessionComplete(container);
-            return;
-        }
-
-        if (activeCards.length <= 2) {
-            loadDeck();
+    function updateWrappedButton() {
+        if (!wrappedBtn) return;
+        if (swipeCount >= WRAPPED_MIN_SWIPES) {
+            wrappedBtn.classList.remove('hidden');
         }
     }
 
@@ -63,36 +76,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (container.querySelector('.swipe-empty-state')) return;
         const empty = document.createElement('div');
         empty.className = 'swipe-empty-state';
-        empty.textContent = "You're all caught up — check back later for more.";
+        empty.textContent = "No tracks available to swipe on right now.";
         container.appendChild(empty);
     }
 
-    async function showSessionComplete(container) {
-        container.innerHTML = '';
-        const summary = document.createElement('div');
-        summary.className = 'swipe-empty-state';
-        summary.innerHTML = `<p>Nice swiping! Finding your taste pattern...</p>`;
-        container.appendChild(summary);
+    async function showWrapped() {
+        const overlay = document.createElement('div');
+        overlay.className = 'wrapped-overlay';
+        overlay.innerHTML = `<p class="swipe-session-message">Finding your taste pattern...</p>`;
+        document.body.appendChild(overlay);
 
         try {
             const result = await API.get('/swipes/taste-summary');
-            summary.innerHTML = `
-                <p class="swipe-session-message">${result.message}</p>
-                <button class="btn btn-like" id="keep-swiping-btn" style="margin-top: var(--spacing-lg); width: auto; border-radius: var(--border-radius-md); padding: 0 var(--spacing-lg); font-size: var(--font-size-md);">
-                    Keep swiping
-                </button>
+            const genreList = (result.genres || [])
+                .map(g => `<li>${g.genre}</li>`)
+                .join('');
+            overlay.innerHTML = `
+                <div class="wrapped-card">
+                    <h2>Swipr Wrapped</h2>
+                    <p class="swipe-session-message">${result.message}</p>
+                    ${genreList ? `<ul class="wrapped-genre-list">${genreList}</ul>` : ''}
+                    <p class="wrapped-swipe-count">${swipeCount} swipes this session</p>
+                    <button class="btn btn-like" id="close-wrapped-btn">Keep swiping</button>
+                </div>
             `;
-            document.getElementById('keep-swiping-btn')?.addEventListener('click', () => {
-                swipeCount = 0;
-                container.innerHTML = '';
-                loadDeck();
-            });
         } catch (error) {
-            summary.innerHTML = `<p>Nice swiping! Check your stats anytime from your profile.</p>`;
+            overlay.innerHTML = `
+                <div class="wrapped-card">
+                    <h2>Swipr Wrapped</h2>
+                    <p class="swipe-session-message">Couldn't load your stats right now — try again in a bit.</p>
+                    <button class="btn btn-like" id="close-wrapped-btn">Close</button>
+                </div>
+            `;
         }
+
+        document.getElementById('close-wrapped-btn')?.addEventListener('click', () => {
+            overlay.remove();
+        });
     }
 
-    await loadDeck();
+    deckPool = await fetchPool();
+    if (deckPool.length === 0) {
+        showEmptyState(container);
+    } else {
+        fillStack(container);
+    }
 
     document.getElementById('like-btn')?.addEventListener('click', () => {
         if (activeCards.length > 0) {
@@ -105,4 +133,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             activeCards[0].swipe(false);
         }
     });
+
+    wrappedBtn?.addEventListener('click', showWrapped);
 });

@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 <!-- templates/explore.html — Swipe-based user discovery page -->
-
 {% block title %}Explore - Spotifyndr{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/explore.css') }}">
 {% endblock %}
-
 {% block content %}
 <div class="explore-page">
     <h1>Explore</h1>
@@ -19,9 +16,13 @@
         <button class="btn btn-dislike" id="dislike-btn">✕</button>
         <button class="btn btn-like" id="like-btn">♥</button>
     </div>
+
+    <!-- Swipr Wrapped — hidden until at least 5 swipes are recorded -->
+    <div class="wrapped-btn-container">
+        <button class="btn btn-wrapped hidden" id="wrapped-btn">✨ Swipr Wrapped</button>
+    </div>
 </div>
 {% endblock %}
-
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/pages/explore/swipe.js') }}"></script>
 <script src="{{ url_for('static', filename='js/pages/explore/card.js') }}"></script>
