@@ -13,6 +13,8 @@ api_bp.add_url_rule('/users/me', view_func=users.delete_my_account, methods=['DE
 api_bp.add_url_rule('/users/<int:user_id>', view_func=users.get_user, methods=['GET'])
 api_bp.add_url_rule('/users/<int:user_id>', view_func=users.update_user, methods=['PUT'])
 api_bp.add_url_rule('/users/<int:user_id>', view_func=users.delete_user, methods=['DELETE'])
+api_bp.add_url_rule('/users/<int:user_id>/top-tracks', view_func=users.user_top_tracks, methods=['GET'])
+api_bp.add_url_rule('/users/<int:user_id>/top-artists', view_func=users.user_top_artists, methods=['GET'])
 
 api_bp.add_url_rule('/follows/<int:user_id>', view_func=follows.follow_user, methods=['POST'])
 api_bp.add_url_rule('/follows/<int:user_id>', view_func=follows.unfollow_user, methods=['DELETE'])

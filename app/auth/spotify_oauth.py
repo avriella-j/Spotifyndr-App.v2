@@ -38,7 +38,7 @@ class SpotifyOAuth:
             'client_id': self.client_id,
             'response_type': 'code',
             'redirect_uri': self.redirect_uri,
-            'scope': 'user-read-private user-read-email user-top-read user-library-read',
+            'scope': 'user-read-private user-read-email user-top-read user-library-read user-read-recently-played',
             'state': state
         }
 

@@ -1,8 +1,8 @@
 from flask import jsonify, request
 from flask_login import login_required, current_user
 from app.services.user_service import UserService
-from app.services.spotify_service import SpotifyService
-from app.services.token_service import TokenService
+from app.services.spotify_sync_service import SpotifySyncService
+from app.models.user_top_content import UserTopContent
 
 
 @login_required
@@ -47,55 +47,22 @@ def delete_user(user_id):
 
 @login_required
 def get_my_top_tracks():
-    """Fetch current user's top tracks from Spotify."""
-    limit = request.args.get('limit', 20, type=int)
-    time_range = request.args.get('time_range', 'medium_term')
-    
-    token = TokenService.decrypt_token(current_user.access_token)
-    service = SpotifyService(token)
-    
+    """Get current user's top tracks (synced from Spotify)."""
     try:
-        data = service.get_top_tracks(limit=limit, time_range=time_range)
-        items = data.get('items', [])
-        result = []
-        for item in items:
-            album_images = item.get('album', {}).get('images', [])
-            result.append({
-                'id': item['id'],
-                'name': item['name'],
-                'artist': item['artists'][0]['name'] if item['artists'] else 'Unknown',
-                'image_url': album_images[0]['url'] if album_images else '',
-                'album': item.get('album', {}).get('name', ''),
-                'popularity': item.get('popularity', 0)
-            })
-        return jsonify(result)
+        content = SpotifySyncService.sync_if_stale(current_user)
+        tracks = content.top_tracks if content and content.top_tracks else []
+        return jsonify(tracks)
     except Exception as e:
         return jsonify({'error': str(e), 'items': []}), 500
 
 
 @login_required
 def get_my_top_artists():
-    """Fetch current user's top artists from Spotify."""
-    limit = request.args.get('limit', 20, type=int)
-    time_range = request.args.get('time_range', 'medium_term')
-    
-    token = TokenService.decrypt_token(current_user.access_token)
-    service = SpotifyService(token)
-    
+    """Get current user's top artists (synced from Spotify)."""
     try:
-        data = service.get_top_artists(limit=limit, time_range=time_range)
-        items = data.get('items', [])
-        result = []
-        for item in items:
-            images = item.get('images', [])
-            result.append({
-                'id': item['id'],
-                'name': item['name'],
-                'image_url': images[0]['url'] if images else '',
-                'followers': item.get('followers', {}).get('total', 0),
-                'genres': item.get('genres', [])
-            })
-        return jsonify(result)
+        content = SpotifySyncService.sync_if_stale(current_user)
+        artists = content.top_artists if content and content.top_artists else []
+        return jsonify(artists)
     except Exception as e:
         return jsonify({'error': str(e), 'items': []}), 500
 
@@ -134,3 +101,19 @@ def delete_my_account():
     """Delete current user's account."""
     UserService.delete_user(current_user.id)
     return jsonify({'message': 'User deleted successfully'})
+
+
+@login_required
+def user_top_tracks(user_id):
+    """Get another user's top tracks from DB."""
+    content = UserTopContent.query.filter_by(user_id=user_id).first()
+    tracks = content.top_tracks if content and content.top_tracks else []
+    return jsonify(tracks)
+
+
+@login_required
+def user_top_artists(user_id):
+    """Get another user's top artists from DB."""
+    content = UserTopContent.query.filter_by(user_id=user_id).first()
+    artists = content.top_artists if content and content.top_artists else []
+    return jsonify(artists)

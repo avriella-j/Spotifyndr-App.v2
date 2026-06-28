@@ -6,6 +6,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.auth.spotify_oauth import SpotifyOAuth
 from app.models.user import User
 from app.services.user_service import UserService
+from app.services.spotify_sync_service import SpotifySyncService
 
 auth_bp = Blueprint('auth', __name__)
 spotify_oauth = SpotifyOAuth()
@@ -59,6 +60,13 @@ def callback():
     )
 
     login_user(user)
+
+    try:
+        SpotifySyncService.sync_top_content(user)
+    except Exception as e:
+        app = current_app._get_current_object()
+        app.logger.error(f"Initial Spotify sync failed for user {user.id}: {e}")
+
     return redirect(url_for('profile.profile'))
 
 
