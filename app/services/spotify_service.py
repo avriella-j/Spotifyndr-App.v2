@@ -2,6 +2,7 @@
 
 import requests
 import time
+from datetime import datetime, timedelta
 from flask import current_app
 from app.models.spotify_cache import SpotifyCache
 from app.extensions import db
@@ -31,27 +32,31 @@ class SpotifyService:
     def _make_request(self, endpoint, params=None):
         """Make authenticated request to Spotify API."""
         self._rate_limit()
-        
+
         cache_key = f"{endpoint}:{str(params)}"
         cached = SpotifyCache.query.filter_by(cache_key=cache_key).first()
-        
-        if cached and cached.expires_at > time.time():
+
+        if cached and cached.expires_at > datetime.utcnow():
             return cached.data
-        
+
         url = f"{self.API_URL}{endpoint}"
         response = requests.get(url, headers=self._get_headers(), params=params)
         response.raise_for_status()
         data = response.json()
-        
+
         # Cache the response (1 hour TTL)
-        cache = SpotifyCache(
-            cache_key=cache_key,
-            data=data,
-            expires_at=time.time() + 3600  # 1 hour cache
-        )
-        db.session.add(cache)
+        if cached:
+            cached.data = data
+            cached.expires_at = datetime.utcnow() + timedelta(hours=1)
+        else:
+            cache = SpotifyCache(
+                cache_key=cache_key,
+                data=data,
+                expires_at=datetime.utcnow() + timedelta(hours=1)
+            )
+            db.session.add(cache)
         db.session.commit()
-        
+
         return data
     
     def get_user_profile(self):

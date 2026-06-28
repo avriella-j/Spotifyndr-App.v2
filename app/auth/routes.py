@@ -60,12 +60,13 @@ def callback():
     )
 
     login_user(user)
+    user_id_for_logging = user.id
 
     try:
         SpotifySyncService.sync_top_content(user)
     except Exception as e:
         app = current_app._get_current_object()
-        app.logger.error(f"Initial Spotify sync failed for user {user.id}: {e}")
+        app.logger.error(f"Initial Spotify sync failed for user {user_id_for_logging}: {e}")
 
     return redirect(url_for('profile.profile'))
 
