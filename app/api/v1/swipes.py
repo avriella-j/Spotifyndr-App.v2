@@ -11,18 +11,32 @@ import random
 swipes_api_bp = Blueprint('swipes_api', __name__)
 
 
+def _build_artist_genre_lookup(content):
+    lookup = {}
+    for artist in (content.top_artists or []):
+        if artist.get('id'):
+            lookup[artist['id']] = artist.get('genres', [])
+    return lookup
+
+
+def _genres_for_content(content_id, content_type, content, artist_genre_lookup):
+    if content_type == 'artist':
+        return artist_genre_lookup.get(content_id, [])
+
+    all_tracks = (content.saved_tracks or []) + (content.top_tracks or [])
+    for track in all_tracks:
+        if track.get('id') == content_id:
+            for artist_id in track.get('artist_ids', []):
+                genres = artist_genre_lookup.get(artist_id)
+                if genres:
+                    return genres
+    return []
+
+
 @swipes_api_bp.route('', methods=['POST'])
 @login_required
 def record_swipe():
-    """Record a single swipe (like/dislike) on a track or artist.
-
-    Expected JSON body:
-    {
-        "content_id": "<spotify id>",
-        "content_type": "track" | "artist",
-        "liked": true | false
-    }
-    """
+    """Record a single swipe (like/dislike) on a track or artist."""
     data = request.get_json(silent=True) or {}
     content_id = data.get('content_id')
     content_type = data.get('content_type')
@@ -33,11 +47,18 @@ def record_swipe():
     if not isinstance(liked, bool):
         return jsonify({'error': 'liked must be a boolean'}), 400
 
+    content = UserTopContent.query.filter_by(user_id=current_user.id).first()
+    genres = []
+    if content:
+        artist_genre_lookup = _build_artist_genre_lookup(content)
+        genres = _genres_for_content(content_id, content_type, content, artist_genre_lookup)
+
     swipe = Swipe(
         user_id=current_user.id,
         content_id=content_id,
         content_type=content_type,
         liked=liked,
+        genres=genres,
     )
     db.session.add(swipe)
     db.session.commit()
@@ -48,9 +69,7 @@ def record_swipe():
 @swipes_api_bp.route('/deck', methods=['GET'])
 @login_required
 def get_swipe_deck():
-    """Return a batch of tracks for the user to swipe on, pulled from
-    their own saved + top tracks (already-synced data, no live Spotify
-    call needed here)."""
+    """Return the full pool of tracks for the user to swipe on."""
     content = UserTopContent.query.filter_by(user_id=current_user.id).first()
     if not content:
         return jsonify([])
@@ -59,28 +78,26 @@ def get_swipe_deck():
     if not pool:
         return jsonify([])
 
-    random.shuffle(pool)
-    return jsonify(pool[:20])
+    seen_ids = set()
+    deduped = []
+    for track in pool:
+        if track.get('id') not in seen_ids:
+            seen_ids.add(track.get('id'))
+            deduped.append(track)
+
+    random.shuffle(deduped)
+    return jsonify(deduped)
 
 
 @swipes_api_bp.route('/taste-summary', methods=['GET'])
 @login_required
 def taste_summary():
-    """Return a logistic-regression-derived summary of the user's taste
-    based on their swipe history."""
+    """Return a logistic-regression-derived summary of the user's taste,
+    reading genres directly from each Swipe row (captured at swipe-time)."""
     swipes = Swipe.query.filter_by(user_id=current_user.id).all()
     known_genres = get_known_genres()
 
-    # Build content_id -> genres lookup from the user's own cached top
-    # content (covers swipes on content that also appears there) plus
-    # fall back to empty for anything else.
-    content = UserTopContent.query.filter_by(user_id=current_user.id).first()
-    content_genre_lookup = {}
-    if content:
-        for artist in (content.top_artists or []):
-            content_genre_lookup[artist['id']] = artist.get('genres', [])
-
-    X, y = build_training_data(swipes, content_genre_lookup, known_genres)
+    X, y = build_training_data(swipes, known_genres)
     model = train_taste_model(X, y) if X is not None else None
     summary = summarize_taste(model, known_genres)
 

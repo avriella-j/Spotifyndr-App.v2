@@ -1,14 +1,13 @@
 # app/ml/taste_model.py — Logistic regression over a user's swipe history,
 # to produce a simple "your taste leans toward X genres" summary.
-
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 
 
-def build_training_data(swipes, content_genre_lookup, known_genres):
+def build_training_data(swipes, known_genres):
     """
-    swipes: list of Swipe model instances for one user
-    content_genre_lookup: dict mapping content_id -> list of genre strings
+    swipes: list of Swipe model instances for one user. Each Swipe now
+        carries its own `genres` field, captured at swipe-creation time.
     known_genres: ordered list of all genre strings the system tracks
 
     Returns (X, y) suitable for sklearn, or (None, None) if there's not
@@ -16,7 +15,7 @@ def build_training_data(swipes, content_genre_lookup, known_genres):
     """
     X, y = [], []
     for swipe in swipes:
-        genres = content_genre_lookup.get(swipe.content_id, [])
+        genres = swipe.genres or []
         if not genres:
             continue
         row = [1.0 if g in genres else 0.0 for g in known_genres]
