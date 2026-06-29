@@ -5,6 +5,9 @@ from app.extensions import db
 from app.models.swipe import Swipe
 from app.models.user_top_content import UserTopContent
 from app.ml.taste_model import build_training_data, train_taste_model, summarize_taste
+from app.ml.discovery_engine import generate_discovery_batch
+from app.services.token_service import TokenService
+from app.services.spotify_service import SpotifyService
 import random
 
 swipes_api_bp = Blueprint('swipes_api', __name__)
@@ -82,6 +85,26 @@ def get_swipe_deck():
 
     random.shuffle(deduped)
     return jsonify(deduped)
+
+
+@swipes_api_bp.route('/discover', methods=['GET'])
+@login_required
+def get_discovery_batch():
+    """Returns a fresh batch of NEW tracks via search, for when the
+    user's own saved/top tracks pool runs low."""
+    content = UserTopContent.query.filter_by(user_id=current_user.id).first()
+    if not content:
+        return jsonify([])
+
+    exclude_param = request.args.get('exclude_ids', '')
+    exclude_ids = [x for x in exclude_param.split(',') if x]
+    offset = int(request.args.get('offset', 0))
+
+    access_token = TokenService.get_valid_access_token(current_user)
+    spotify = SpotifyService(access_token)
+
+    batch = generate_discovery_batch(spotify, content, exclude_ids, batch_size=20, offset_seed=offset)
+    return jsonify(batch)
 
 
 def _build_known_artists(user_id):

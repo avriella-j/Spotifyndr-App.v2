@@ -87,6 +87,6 @@ class SpotifyService:
         """Get playlist details."""
         return self._make_request(f'/playlists/{playlist_id}')
     
-    def search(self, query, type='track', limit=10):
+    def search(self, query, type='track', limit=10, offset=0):
         """Search Spotify."""
-        return self._make_request('/search', {'q': query, 'type': type, 'limit': limit})
+        return self._make_request('/search', {'q': query, 'type': type, 'limit': limit, 'offset': offset})
