@@ -5,18 +5,21 @@
 import random
 
 
-def _get_seed_genres(top_content, limit=5):
-    genres = set()
+def _get_seed_genres(top_content, limit=10):
+    genres = []
+    seen = set()
     for artist in (top_content.top_artists or []):
         for g in artist.get('genres', []) or []:
-            genres.add(g)
-    return list(genres)[:limit]
+            if g not in seen:
+                seen.add(g)
+                genres.append(g)
+    return genres[:limit]
 
 
-def _get_seed_artist_names(top_content, limit=8):
+def _get_seed_artist_names(top_content, limit=10):
     names = []
     for artist in (top_content.top_artists or []):
-        if artist.get('name'):
+        if artist.get('name') and artist['name'] not in names:
             names.append(artist['name'])
     return names[:limit]
 
@@ -29,19 +32,28 @@ def _get_known_track_ids(top_content):
     return ids
 
 
-def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_size=20, offset_seed=0):
+# Track offsets per query across calls
+_query_offsets = {}
+
+
+def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_size=50):
     seed_genres = _get_seed_genres(top_content)
     seed_artists = _get_seed_artist_names(top_content)
     known_ids = _get_known_track_ids(top_content) | set(exclude_ids)
 
     queries = []
+
     for genre in seed_genres:
         queries.append(f'genre:"{genre}"')
+        queries.append(f'{genre}')
+
     for artist in seed_artists:
         queries.append(artist)
+        queries.append(f'{artist} playlist')
 
     if not queries:
-        queries = ['pop', 'hip hop', 'rock', 'r&b', 'edm']
+        queries = ['pop', 'hip hop', 'rock', 'r&b', 'edm',
+                   'electronic', 'latin', 'indie', 'jazz', 'country']
 
     random.shuffle(queries)
 
@@ -49,17 +61,23 @@ def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_si
     for query in queries:
         if len(results) >= batch_size:
             break
+
+        offset = _query_offsets.get(query, 0)
+
         try:
-            resp = spotify_service.search(query, type='track', limit=10, offset=offset_seed)
-        except TypeError:
-            try:
-                resp = spotify_service.search(query, type='track', limit=10)
-            except Exception:
-                continue
+            resp = spotify_service.search(query, type='track', limit=50, offset=offset)
         except Exception:
+            _query_offsets[query] = offset + 50
             continue
 
-        for track in resp.get('tracks', {}).get('items', []):
+        items = resp.get('tracks', {}).get('items', [])
+        if not items:
+            _query_offsets[query] = 0
+            continue
+
+        _query_offsets[query] = offset + 50
+
+        for track in items:
             if track['id'] in known_ids or track['id'] in results:
                 continue
             results[track['id']] = {

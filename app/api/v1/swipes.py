@@ -98,40 +98,77 @@ def get_discovery_batch():
 
     exclude_param = request.args.get('exclude_ids', '')
     exclude_ids = [x for x in exclude_param.split(',') if x]
-    offset = int(request.args.get('offset', 0))
 
     access_token = TokenService.get_valid_access_token(current_user)
     spotify = SpotifyService(access_token)
 
-    batch = generate_discovery_batch(spotify, content, exclude_ids, batch_size=20, offset_seed=offset)
+    batch = generate_discovery_batch(spotify, content, exclude_ids)
     return jsonify(batch)
 
 
-def _build_known_artists(user_id):
+def _build_artist_genre_lookup(user_id, spotify_service=None):
+    """Build artist_id -> genres mapping from cached top_artists,
+    falling back to a live Spotify API call for artists missing genre data."""
     content = UserTopContent.query.filter_by(user_id=user_id).first()
+    artist_id_to_genres = {}
     artist_id_to_name = {}
+    need_lookup = []
+
     if content:
         for artist in (content.top_artists or []):
-            if artist.get('id'):
-                artist_id_to_name[artist['id']] = artist.get('name', 'Unknown artist')
+            aid = artist.get('id')
+            if not aid:
+                continue
+            name = artist.get('name', 'Unknown artist')
+            artist_id_to_name[aid] = name
+            genres = artist.get('genres', []) or []
+            if genres:
+                artist_id_to_genres[aid] = genres
+            else:
+                need_lookup.append((aid, name))
 
+    # Try live lookup for artists that have no cached genres
+    if spotify_service and need_lookup:
+        for aid, name in need_lookup[:5]:
+            try:
+                artist_data = spotify_service.get_artist(aid)
+                genres = artist_data.get('genres', []) or []
+                if genres:
+                    artist_id_to_genres[aid] = genres
+            except Exception:
+                pass
+
+    # Also collect from swipes
     swipes = Swipe.query.filter_by(user_id=user_id).all()
     for swipe in swipes:
         if swipe.artist_id and swipe.artist_id not in artist_id_to_name:
             artist_id_to_name[swipe.artist_id] = swipe.artist_name or 'Unknown artist'
+            if swipe.artist_id not in artist_id_to_genres:
+                if spotify_service:
+                    try:
+                        artist_data = spotify_service.get_artist(swipe.artist_id)
+                        genres = artist_data.get('genres', []) or []
+                        if genres:
+                            artist_id_to_genres[swipe.artist_id] = genres
+                    except Exception:
+                        pass
 
-    return list(artist_id_to_name.keys()), artist_id_to_name, swipes
+    return list(artist_id_to_name.keys()), artist_id_to_name, artist_id_to_genres, swipes
 
 
 @swipes_api_bp.route('/taste-summary', methods=['GET'])
 @login_required
 def taste_summary():
-    """Return a logistic-regression-derived summary of the user's taste,
-    based on which artists they tend to like vs dislike when swiping."""
-    known_artist_ids, artist_id_to_name, swipes = _build_known_artists(current_user.id)
+    """Return genre percentages derived from which artists the user
+    tends to like vs dislike when swiping."""
+    access_token = TokenService.get_valid_access_token(current_user)
+    spotify = SpotifyService(access_token)
+
+    known_artist_ids, artist_id_to_name, artist_id_to_genres, swipes = \
+        _build_artist_genre_lookup(current_user.id, spotify)
 
     X, y = build_training_data(swipes, known_artist_ids)
     model = train_taste_model(X, y) if X is not None else None
-    summary = summarize_taste(model, known_artist_ids, artist_id_to_name)
+    summary = summarize_taste(model, known_artist_ids, artist_id_to_name, artist_id_to_genres)
 
     return jsonify(summary)

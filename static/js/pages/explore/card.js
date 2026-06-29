@@ -111,14 +111,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const result = await API.get('/swipes/taste-summary');
-            const artistList = (result.artists || [])
-                .map(a => `<li>${a.name}</li>`)
-                .join('');
+            const genreBars = (result.genres || [])
+                .map(g => `
+                    <li>
+                        <div class="wrapped-genre-label">
+                            <span>${g.genre}</span>
+                            <span>${g.percentage}%</span>
+                        </div>
+                        <div class="wrapped-genre-bar-track">
+                            <div class="wrapped-genre-bar-fill" style="width: ${g.percentage}%"></div>
+                        </div>
+                    </li>
+                `).join('');
             overlay.innerHTML = `
                 <div class="wrapped-card">
                     <h2>Swipr Wrapped</h2>
                     <p class="swipe-session-message">${result.message}</p>
-                    ${artistList ? `<ul class="wrapped-genre-list">${artistList}</ul>` : ''}
+                    ${genreBars ? `<ul class="wrapped-genre-list">${genreBars}</ul>` : ''}
                     <p class="wrapped-swipe-count">${swipeCount} swipes this session</p>
                     <button class="btn btn-like" id="close-wrapped-btn">Keep swiping</button>
                 </div>
