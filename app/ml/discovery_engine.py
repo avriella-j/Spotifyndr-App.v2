@@ -5,6 +5,28 @@
 import random
 
 
+def normalize_spotify_genres(spotify_genres_list):
+    """
+    Takes a raw list of strings from Spotify's artist genres array
+    and sanitizes/maps them to parent UI buckets.
+    """
+    if not spotify_genres_list:
+        return "Pop"
+
+    combined_raw = " ".join(spotify_genres_list).lower()
+
+    if any(keyword in combined_raw for keyword in ["rock", "punk", "grunge", "alternative", "emo"]):
+        return "Alternative Rock"
+    if any(keyword in combined_raw for keyword in ["r&b", "soul", "motown", "neo-soul"]):
+        return "R&B"
+    if any(keyword in combined_raw for keyword in ["hip hop", "rap", "trap", "drill"]):
+        return "Hip-Hop"
+    if any(keyword in combined_raw for keyword in ["house", "techno", "edm", "dance", "electronic"]):
+        return "Electronic/Dance"
+
+    return "Pop"
+
+
 def _get_seed_genres(top_content, limit=10):
     genres = []
     seen = set()
@@ -36,7 +58,7 @@ def _get_known_track_ids(top_content):
 _query_offsets = {}
 
 
-def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_size=50):
+def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_size=50, offset=0):
     seed_genres = _get_seed_genres(top_content)
     seed_artists = _get_seed_artist_names(top_content)
     known_ids = _get_known_track_ids(top_content) | set(exclude_ids)
@@ -45,15 +67,20 @@ def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_si
 
     for genre in seed_genres:
         queries.append(f'genre:"{genre}"')
-        queries.append(f'{genre}')
+        queries.append(f'{genre} playlist')
+        queries.append(f'{genre} 2024')
+        queries.append(f'{genre} 2025')
 
     for artist in seed_artists:
         queries.append(artist)
         queries.append(f'{artist} playlist')
+        queries.append(f'{artist} top tracks')
+        queries.append(f'{artist} hits')
 
     if not queries:
-        queries = ['pop', 'hip hop', 'rock', 'r&b', 'edm',
-                   'electronic', 'latin', 'indie', 'jazz', 'country']
+        queries = ['pop 2024', 'hip hop 2025', 'rock hits',
+                   'r&b 2024', 'edm 2025', 'electronic',
+                   'latin hits', 'indie 2024', 'jazz 2025', 'country']
 
     random.shuffle(queries)
 
@@ -62,12 +89,14 @@ def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_si
         if len(results) >= batch_size:
             break
 
-        offset = _query_offsets.get(query, 0)
+        per_query_offset = _query_offsets.get(query, 0)
+        if offset > per_query_offset:
+            per_query_offset = offset
 
         try:
-            resp = spotify_service.search(query, type='track', limit=50, offset=offset)
+            resp = spotify_service.search(query, type='track', limit=50, offset=per_query_offset)
         except Exception:
-            _query_offsets[query] = offset + 50
+            _query_offsets[query] = per_query_offset + 50
             continue
 
         items = resp.get('tracks', {}).get('items', [])
@@ -75,13 +104,14 @@ def generate_discovery_batch(spotify_service, top_content, exclude_ids, batch_si
             _query_offsets[query] = 0
             continue
 
-        _query_offsets[query] = offset + 50
+        _query_offsets[query] = per_query_offset + 50
 
         for track in items:
-            if track['id'] in known_ids or track['id'] in results:
+            tid = track['id']
+            if tid in known_ids or tid in results:
                 continue
-            results[track['id']] = {
-                'id': track['id'],
+            results[tid] = {
+                'id': tid,
                 'name': track['name'],
                 'artist': ', '.join(a['name'] for a in track['artists']),
                 'album': track['album']['name'],

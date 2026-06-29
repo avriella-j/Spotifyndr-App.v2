@@ -204,17 +204,17 @@
 
 .wrapped-card {
     position: relative;
-    background: linear-gradient(180deg, #1e1e1e 0%, #181818 100%);
-    border-radius: 16px;
-    padding: 40px 32px 32px;
+    background: #121212;
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
     max-width: 420px;
     width: 90%;
-    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
     animation: cardSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -229,136 +229,110 @@
     }
 }
 
-/* Close X button */
-.wrapped-close-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 16px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s;
-    padding: 0;
-}
-
-.wrapped-close-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
-}
-
 /* Title */
 .wrapped-card h2 {
     font-size: 28px;
     font-weight: 800;
     color: #fff;
-    margin: 0;
+    margin: 0 0 8px;
     letter-spacing: -0.3px;
 }
 
-.wrapped-message {
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.55);
-    margin: 0;
-    line-height: 1.5;
-    max-width: 320px;
-}
-
-/* --- Genre Bar Rows --- */
-.wrapped-genre-list {
-    list-style: none;
+/* Close X */
+.close-wrapped-x {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #b3b3b3;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
     padding: 0;
-    margin: 8px 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    width: 100%;
 }
 
-.wrapped-genre-list li {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.close-wrapped-x:hover {
+    color: #ffffff;
 }
 
-.wrapped-genre-row {
+/* --- Genre Chart --- */
+.genre-chart-container {
+    margin: 20px 0;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 12px;
     width: 100%;
 }
 
-.wrapped-genre-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-    min-width: 64px;
-    text-align: left;
+.genre-chart-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.wrapped-genre-bar-track {
-    flex: 1;
-    height: 10px;
-    background-color: rgba(255, 255, 255, 0.08);
-    border-radius: 5px;
+.genre-label {
+    width: 100px;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: left;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.genre-progress-bg {
+    flex-grow: 1;
+    background: #282828;
+    height: 8px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
-.wrapped-genre-bar-fill {
+.genre-progress-fill {
     height: 100%;
-    border-radius: 5px;
-    width: 0%;
-    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: #1DB954;
+    border-radius: 4px;
+    width: 0;
+    animation: growProgressBar 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
 
-.wrapped-genre-pct {
-    font-size: 13px;
-    font-weight: 700;
-    color: #1DB954;
-    min-width: 40px;
+@keyframes growProgressBar {
+    to {
+        width: var(--target-width);
+    }
+}
+
+.genre-percentage {
+    width: 40px;
     text-align: right;
-    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    color: #b3b3b3;
+    flex-shrink: 0;
 }
 
 /* --- Footer --- */
-.wrapped-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-    width: 100%;
-}
-
 .wrapped-swipe-count {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.35);
-    margin: 0;
+    margin: 0 0 12px;
 }
 
-.wrapped-keep-swiping-btn {
-    padding: 12px 32px;
-    border-radius: 999px;
-    border: none;
+.btn-spotify-pill {
     background: #1DB954;
-    color: #000;
+    color: #ffffff;
+    border-radius: 50px;
+    padding: 10px 24px;
     font-size: 14px;
     font-weight: 700;
+    border: none;
     cursor: pointer;
-    transition: transform 0.15s ease, background 0.2s ease;
+    transition: transform 0.2s ease;
     letter-spacing: 0.2px;
 }
 
-.wrapped-keep-swiping-btn:hover {
+.btn-spotify-pill:hover {
     transform: scale(1.04);
-    background: #1ed760;
 }
