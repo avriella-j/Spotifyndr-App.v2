@@ -4,8 +4,7 @@ from flask_login import login_required, current_user
 from app.extensions import db
 from app.models.swipe import Swipe
 from app.models.user_top_content import UserTopContent
-from app.ml.taste_model import build_training_data, train_taste_model, summarize_taste
-from app.ml.discovery_engine import generate_discovery_batch
+from app.ml.discovery_engine import generate_discovery_batch, normalize_spotify_genres
 from app.services.token_service import TokenService
 from app.services.spotify_service import SpotifyService
 import random
@@ -106,69 +105,65 @@ def get_discovery_batch():
     return jsonify(batch)
 
 
-def _build_artist_genre_lookup(user_id, spotify_service=None):
-    """Build artist_id -> genres mapping from cached top_artists,
-    falling back to a live Spotify API call for artists missing genre data."""
-    content = UserTopContent.query.filter_by(user_id=user_id).first()
-    artist_id_to_genres = {}
-    artist_id_to_name = {}
-    need_lookup = []
-
-    if content:
-        for artist in (content.top_artists or []):
-            aid = artist.get('id')
-            if not aid:
-                continue
-            name = artist.get('name', 'Unknown artist')
-            artist_id_to_name[aid] = name
-            genres = artist.get('genres', []) or []
-            if genres:
-                artist_id_to_genres[aid] = genres
-            else:
-                need_lookup.append((aid, name))
-
-    # Try live lookup for artists that have no cached genres
-    if spotify_service and need_lookup:
-        for aid, name in need_lookup[:5]:
-            try:
-                artist_data = spotify_service.get_artist(aid)
-                genres = artist_data.get('genres', []) or []
-                if genres:
-                    artist_id_to_genres[aid] = genres
-            except Exception:
-                pass
-
-    # Also collect from swipes
-    swipes = Swipe.query.filter_by(user_id=user_id).all()
-    for swipe in swipes:
-        if swipe.artist_id and swipe.artist_id not in artist_id_to_name:
-            artist_id_to_name[swipe.artist_id] = swipe.artist_name or 'Unknown artist'
-            if swipe.artist_id not in artist_id_to_genres:
-                if spotify_service:
-                    try:
-                        artist_data = spotify_service.get_artist(swipe.artist_id)
-                        genres = artist_data.get('genres', []) or []
-                        if genres:
-                            artist_id_to_genres[swipe.artist_id] = genres
-                    except Exception:
-                        pass
-
-    return list(artist_id_to_name.keys()), artist_id_to_name, artist_id_to_genres, swipes
-
-
 @swipes_api_bp.route('/taste-summary', methods=['GET'])
 @login_required
-def taste_summary():
-    """Return genre percentages derived from which artists the user
-    tends to like vs dislike when swiping."""
+def get_taste_summary():
+    """
+    Aggregates user swipe actions for the current session. Maps individual
+    artists to standardized genres and calculates final statistical percentages.
+    """
     access_token = TokenService.get_valid_access_token(current_user)
     spotify = SpotifyService(access_token)
 
-    known_artist_ids, artist_id_to_name, artist_id_to_genres, swipes = \
-        _build_artist_genre_lookup(current_user.id, spotify)
+    # 1. Fetch user swipes
+    swipes = Swipe.query.filter_by(user_id=current_user.id).all()
 
-    X, y = build_training_data(swipes, known_artist_ids)
-    model = train_taste_model(X, y) if X is not None else None
-    summary = summarize_taste(model, known_artist_ids, artist_id_to_name, artist_id_to_genres)
+    # 2. Build authoritative genre lookup from followed artists
+    followed_genres = {}
+    try:
+        following_data = spotify.get_following(limit=50)
+        for artist in following_data.get('artists', {}).get('items', []):
+            aid = artist.get('id')
+            if aid:
+                genres = artist.get('genres', []) or []
+                if genres:
+                    followed_genres[aid] = genres
+    except Exception:
+        pass
 
-    return jsonify(summary)
+    # 3. Count liked swipes by genre
+    genre_counts = {}
+    total_liked = 0
+
+    for swipe in swipes:
+        if not swipe.liked or not swipe.artist_id:
+            continue
+        total_liked += 1
+
+        genres = followed_genres.get(swipe.artist_id)
+        if not genres:
+            try:
+                artist_data = spotify.get_artist(swipe.artist_id)
+                genres = artist_data.get('genres', []) or []
+            except Exception:
+                genres = []
+
+        parent_genre = normalize_spotify_genres(genres)
+        genre_counts[parent_genre] = genre_counts.get(parent_genre, 0) + 1
+
+    # 4. Compute percentages
+    genres_summary = []
+    for genre, count in genre_counts.items():
+        pct = round((count / total_liked) * 100) if total_liked > 0 else 0
+        genres_summary.append({"name": genre, "percentage": pct})
+
+    genres_summary.sort(key=lambda x: x['percentage'], reverse=True)
+
+    top3 = ", ".join(g['name'] for g in genres_summary[:3])
+    message = f"Your top genres are {top3}." if top3 else "Keep swiping to see your taste profile!"
+
+    return jsonify({
+        "message": message,
+        "genres": genres_summary,
+        "total_swipes": total_liked
+    })
