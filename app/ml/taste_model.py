@@ -64,7 +64,14 @@ def summarize_taste(model, known_artist_ids, artist_id_to_name, artist_id_to_gen
     top3 = [g['genre'] for g in genre_pcts[:3]]
     top3_pct = [f"{g['genre']} ({g['percentage']}%)" for g in genre_pcts[:3]]
 
+    total_weight = sum(w for _, w in top_artists)
+    top_artist_data = [
+        {'name': artist_id_to_name.get(aid, 'Unknown'), 'percentage': round(w / total_weight * 100, 1)}
+        for aid, w in top_artists
+    ]
+
     return {
+        'artists': top_artist_data,
         'genres': genre_pcts,
         'message': f"Your top genres are {', '.join(top3_pct)}."
     }

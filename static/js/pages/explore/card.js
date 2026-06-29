@@ -115,8 +115,61 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             const result = await API.get('/swipes/taste-summary');
-            const genreBars = (result.genres || [])
-                .map(g => `
+
+            const artistToGenreMap = {
+                'mariah the scientist': 'R&B',
+                'ne-yo': 'R&B',
+                'kiana ledé': 'R&B',
+                'givēon': 'R&B',
+                'coco lee': 'Pop',
+                'katseye': 'Pop',
+                'ariana grande': 'Pop',
+                'one direction': 'Pop',
+                'charlie puth': 'Pop',
+                'diddy': 'Hip-Hop',
+                'nelly': 'Hip-Hop',
+                'david guetta': 'Electronic/Dance',
+                'taylor swift': 'Pop',
+                'the weeknd': 'R&B',
+                'sza': 'R&B',
+                'drake': 'Hip-Hop',
+                'kendrick lamar': 'Hip-Hop',
+                'kanye west': 'Hip-Hop',
+                'j. cole': 'Hip-Hop',
+                'billie eilish': 'Pop',
+                'olivia rodrigo': 'Pop',
+                'dua lipa': 'Pop',
+                'doja cat': 'Pop',
+                'bad bunny': 'Latin',
+                'beyoncé': 'R&B',
+                'rihanna': 'R&B',
+                'bruno mars': 'Pop',
+                'ed sheeran': 'Pop',
+                'adele': 'Pop',
+                'coldplay': 'Alternative',
+                'imagine dragons': 'Alternative',
+                'the beatles': 'Classic Rock',
+                'queen': 'Classic Rock',
+            };
+
+            function aggregateGenres(artists) {
+                const genreTotals = {};
+                const fallback = 'Other';
+                for (const a of artists) {
+                    const key = a.name.toLowerCase().trim();
+                    const genre = artistToGenreMap[key] || (result.genres && result.genres.length > 0
+                        ? result.genres.find(g => a.name.toLowerCase().includes(g.genre.toLowerCase()))?.genre
+                        : fallback);
+                    const mapped = genre || fallback;
+                    genreTotals[mapped] = (genreTotals[mapped] || 0) + a.percentage;
+                }
+                return Object.entries(genreTotals)
+                    .map(([genre, percentage]) => ({ genre, percentage: Math.round(percentage * 10) / 10 }))
+                    .sort((a, b) => b.percentage - a.percentage);
+            }
+
+            const aggregatedGenres = aggregateGenres(result.artists || []);
+            const genreBars = aggregatedGenres.map(g => `
                     <li>
                         <div class="wrapped-genre-row">
                             <span class="wrapped-genre-name">${g.genre}</span>
