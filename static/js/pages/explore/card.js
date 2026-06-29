@@ -106,44 +106,63 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function showWrapped() {
         const overlay = document.createElement('div');
         overlay.className = 'wrapped-overlay';
-        overlay.innerHTML = `<p class="swipe-session-message">Finding your taste pattern...</p>`;
+        overlay.innerHTML = `<div class="wrapped-card"><p class="swipe-session-message">Finding your taste pattern...</p></div>`;
         document.body.appendChild(overlay);
+
+        function closeOverlay() {
+            overlay.remove();
+        }
 
         try {
             const result = await API.get('/swipes/taste-summary');
             const genreBars = (result.genres || [])
                 .map(g => `
                     <li>
-                        <div class="wrapped-genre-label">
-                            <span>${g.genre}</span>
-                            <span>${g.percentage}%</span>
-                        </div>
-                        <div class="wrapped-genre-bar-track">
-                            <div class="wrapped-genre-bar-fill" style="width: ${g.percentage}%"></div>
+                        <div class="wrapped-genre-row">
+                            <span class="wrapped-genre-name">${g.genre}</span>
+                            <div class="wrapped-genre-bar-track">
+                                <div class="wrapped-genre-bar-fill" style="background: linear-gradient(90deg, #1DB954, #1ed760);" data-pct="${g.percentage}"></div>
+                            </div>
+                            <span class="wrapped-genre-pct">${g.percentage}%</span>
                         </div>
                     </li>
                 `).join('');
             overlay.innerHTML = `
                 <div class="wrapped-card">
+                    <button class="wrapped-close-btn" data-action="close">✕</button>
                     <h2>Swipr Wrapped</h2>
-                    <p class="swipe-session-message">${result.message}</p>
+                    <p class="wrapped-message">${result.message}</p>
                     ${genreBars ? `<ul class="wrapped-genre-list">${genreBars}</ul>` : ''}
-                    <p class="wrapped-swipe-count">${swipeCount} swipes this session</p>
-                    <button class="btn btn-like" id="close-wrapped-btn">Keep swiping</button>
+                    <div class="wrapped-footer">
+                        <p class="wrapped-swipe-count">${swipeCount} swipes this session</p>
+                        <button class="wrapped-keep-swiping-btn" data-action="close">Keep swiping</button>
+                    </div>
                 </div>
             `;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    document.querySelectorAll('.wrapped-genre-bar-fill').forEach(el => {
+                        el.style.width = el.dataset.pct + '%';
+                    });
+                });
+            });
         } catch (error) {
             overlay.innerHTML = `
                 <div class="wrapped-card">
+                    <button class="wrapped-close-btn" data-action="close">✕</button>
                     <h2>Swipr Wrapped</h2>
-                    <p class="swipe-session-message">Couldn't load your stats right now — try again in a bit.</p>
-                    <button class="btn btn-like" id="close-wrapped-btn">Close</button>
+                    <p class="wrapped-message">Couldn't load your stats right now — try again in a bit.</p>
+                    <div class="wrapped-footer">
+                        <button class="wrapped-keep-swiping-btn" data-action="close">Close</button>
+                    </div>
                 </div>
             `;
         }
 
-        document.getElementById('close-wrapped-btn')?.addEventListener('click', () => {
-            overlay.remove();
+        overlay.addEventListener('click', (e) => {
+            if (e.target.dataset.action === 'close' || e.target === overlay) {
+                closeOverlay();
+            }
         });
     }
 
