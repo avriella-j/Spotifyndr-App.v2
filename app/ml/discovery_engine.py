@@ -5,28 +5,6 @@
 import random
 
 
-def normalize_spotify_genres(spotify_genres_list):
-    """
-    Takes a raw list of strings from Spotify's artist genres array
-    and sanitizes/maps them to parent UI buckets.
-    """
-    if not spotify_genres_list:
-        return "Pop"
-
-    combined_raw = " ".join(spotify_genres_list).lower()
-
-    if any(keyword in combined_raw for keyword in ["rock", "punk", "grunge", "alternative", "emo"]):
-        return "Alternative Rock"
-    if any(keyword in combined_raw for keyword in ["r&b", "soul", "motown", "neo-soul"]):
-        return "R&B"
-    if any(keyword in combined_raw for keyword in ["hip hop", "rap", "trap", "drill"]):
-        return "Hip-Hop"
-    if any(keyword in combined_raw for keyword in ["house", "techno", "edm", "dance", "electronic"]):
-        return "Electronic/Dance"
-
-    return "Pop"
-
-
 def _get_seed_genres(top_content, limit=10):
     genres = []
     seen = set()

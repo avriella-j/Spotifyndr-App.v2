@@ -75,10 +75,6 @@ class SpotifyService:
         """Get user's saved ('Liked Songs') tracks. Requires user-library-read scope."""
         return self._make_request('/me/tracks', {'limit': limit})
     
-    def get_following(self, limit=50):
-        """Get artists the current user follows. Uses /me/following?type=artist."""
-        return self._make_request('/me/following', {'type': 'artist', 'limit': limit})
-
     def get_track(self, track_id):
         """Get track details."""
         return self._make_request(f'/tracks/{track_id}')
